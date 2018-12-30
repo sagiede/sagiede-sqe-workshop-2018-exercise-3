@@ -8,7 +8,7 @@
 * For code parsing, this project uses the [Esprima](http://esprima.org/) library.
     * See example usage in `src/js/code-analyzer.js`
 * Run the project:
-    * From the command-line run: `npm start`
+    * From the command-line run: `npm start` 
     * After the bundler is done, execute the `index.html` from your IDE (preferably `WebStorm`)
     * Try the parser... 
 * For testing, this project uses the [Mocha](https://mochajs.org/) library.

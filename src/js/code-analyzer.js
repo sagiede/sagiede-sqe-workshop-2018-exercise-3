@@ -9,7 +9,7 @@ Object.freeze(Type);
 // let returnObject = {};          //fields: type:Type ,   nodeName: String ,nodeStr: String
 // let ifObject = {};   //fields: type:Type ,   nodeName : string , testStr: String ,ditList : List , difList : List
 // let whileObject = {}; //fields: type:Type ,   nodeName : string , testStr: String ,ditList : List
-
+ 
 let traverseHandler = {};
 let typeHandler = {};
 let createNodesHandler = {};

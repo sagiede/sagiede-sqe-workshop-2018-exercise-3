@@ -1,19 +1,6 @@
 const esprima = require("esprima");
 const escodegen = require("escodegen");
 
-let codeToTest = 'function foo(x, y, z){\n' +
-    '       let a = x + 1;\n' +
-    '       let b = a + y;\n' +
-    '       let c = 0;\n' +
-    '   if (b < z) {\n' +
-    '   while(3>2){\n' +
-    '  a = a+1;\n' +
-    '}\n' +
-    '}\n' +
-    '\n' +
-    '   return c\n' +
-    '  }';
-
 let lableIdx = 0;
 const Type = {'startObject': 0, 'assignObject': 1, 'ifObject': 3, 'returnObject': 4, 'whileObject': 5};
 Object.freeze(Type);
@@ -30,7 +17,6 @@ let createNodesHandler = {};
 
 function expTraverse(ast, env, isGreen, nodesList, paramsEnv) {
     if (ast) {
-        // console.log(ast);
         return traverseHandler[ast.type](ast, env, isGreen, nodesList, paramsEnv);
     }
 }
@@ -64,10 +50,6 @@ const blockTraverse = (ast, env, isGreen, nodesList, paramsEnv) => {
 };
 
 const substitute = (env, exp) => {
-    // const genCode = escodegen.generate(exp);
-    // let newAst = esprima.parseScript(genCode);
-    // exp = newAst.body[0].expression;
-
     if (exp.type === ('Identifier')) {
         exp['name'] = env[exp.name];
     }
@@ -86,13 +68,8 @@ const substitute = (env, exp) => {
 
 const substituteMember = (env, exp) => {
     if (exp.type === 'MemberExpression') {
-        if (env[escodegen.generate(exp)]) {
-            exp = {type: 'Identifier', name: env[escodegen.generate(exp)]};
-        }
-        else {
-            exp.object = substitute(env, exp.object);
-            exp.property = substitute(env, exp.property);
-        }
+        exp.object = substitute(env, exp.object);
+        exp.property = substitute(env, exp.property);
     }
     return exp;
 };
@@ -186,14 +163,6 @@ const extendsEnv = (ast, rightSide, env) => {
         env[escodegen.generate(ast)] = rightSide;
     }
 };
-
-// const nameToCapital = (expName) => {
-//     let upperName = expName.toUpperCase();
-//     if (upperName.charAt(upperName.length - 1) == ';')
-//         upperName = upperName.substring(0, upperName.length - 1);
-//     const upperResult =  upperName.replace(/ |\n/g, '');
-//     return upperResult.replace(/'/g, '"');
-// };
 
 const createWhileNode = (ast, type, isGreen) => {
     let green = '';
@@ -291,36 +260,14 @@ const initCreateNodesHandlers = () => {
     createNodesHandler[Type.whileObject] = createWhileNode;
 };
 
-/*function createEdge(fromNode, toNode, cond) {
-    let str = '';
-    if (fromNode != null && toNode != null) {
-        if (fromNode.type == Type.ifObject) {
-            const endPoints = getEndPoints(fromNode);
-            str += endPoints.reduce((str, node) => {
-                str += createEdge(node, toNode, '');
-                return str;
-            }, str);
-        }
-        if (cond == '')
-            str = fromNode.nodeName + '->' + toNode.nodeName + '\n';
-        else
-            str = fromNode.nodeName + '(' + cond + ')' + '->' + toNode.nodeName + '\n';
-    }
-    return str;
-}*/
-
 function createEdge(fromNode, toNode, cond) {
-    if (fromNode == null || toNode == null)
-        return '';
-    else {
-        if (cond === '') {
-            if (fromNode.type === Type.whileObject)
-                return fromNode.nodeName + '(no)' + '->' + toNode.nodeName + '\n';
-            return fromNode.nodeName + '->' + toNode.nodeName + '\n';
-        }
-        else
-            return fromNode.nodeName + '(' + cond + ')' + '->' + toNode.nodeName + '\n';
+    if (cond === '') {
+        if (fromNode.type === Type.whileObject)
+            return fromNode.nodeName + '(no)' + '->' + toNode.nodeName + '\n';
+        return fromNode.nodeName + '->' + toNode.nodeName + '\n';
     }
+    else
+        return fromNode.nodeName + '(' + cond + ')' + '->' + toNode.nodeName + '\n';
 }
 
 function printNodesAndEdges(nodesList, diagramString, isFirstTraverse) {
@@ -445,10 +392,10 @@ function printWhileObjectNotFirstTraverse(i, nodesList, diagramString) {
 
 
 function printWhileObject(i, nodesList, diagramString, isFirstTraverse) {
-    if(isFirstTraverse)
-        return printWhileObjectFirstTraverse(i,nodesList,diagramString);
+    if (isFirstTraverse)
+        return printWhileObjectFirstTraverse(i, nodesList, diagramString);
     else
-        return printWhileObjectNotFirstTraverse(i,nodesList,diagramString);
+        return printWhileObjectNotFirstTraverse(i, nodesList, diagramString);
 }
 
 // let startObject = {};           //fields: type:Type ,   nodeName: String ,nodeStr: String
@@ -463,7 +410,6 @@ function parseCode(funcInput, jsParams, nodesList) {
     const firstTraverse = true;
     diagramString = printNodesAndEdges(nodesList, diagramString, firstTraverse);
     diagramString = printNodesAndEdges(nodesList, diagramString, !firstTraverse);
-    console.log(diagramString);
     return diagramString;
 }
 
@@ -478,6 +424,5 @@ function createFlowChart(codeToParse, userParams) {
     return parseCode(funcInput, jsParams, nodesList);
 }
 
-createFlowChart(codeToTest, '1,2,3');
 
 export {createFlowChart};
